@@ -1,0 +1,360 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: start;
+  min-width: 320px;
+  min-height: 100vh;
+  transition: background-color 0.3s ease;
+}
+
+body.drag-over {
+  background-color: rgba(100, 108, 255, 0.1);
+  outline: 2px dashed #646cff;
+  outline-offset: -2px;
+}
+
+h1 {
+  font-size: 2.5em;
+  line-height: 1.1;
+  margin-bottom: 2rem;
+}
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  align-self: start;
+}
+
+.grid-app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.grids-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.main-and-right-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.top-grid-container,
+.right-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: #333;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.controls-container {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.dimensions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dimensions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+  width: 180px;
+}
+
+.row-controls label,
+.col-controls label {
+  font-size: 1.2em;
+  color: #646cff;
+  margin: 0;
+  font-weight: normal;
+}
+
+.input-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.control-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #646cff;
+  background-color: transparent;
+  color: #646cff;
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.control-btn:hover {
+  background-color: #646cff;
+  color: white;
+  transform: scale(1.1);
+}
+
+.row-controls input[type="number"],
+.col-controls input[type="number"] {
+  width: 60px;
+  padding: 0.4rem 0.5rem;
+  border: 2px solid #646cff;
+  border-radius: 4px;
+  background-color: #1a1a1a;
+  color: white;
+  text-align: center;
+  font-size: 1.1em;
+  /* Hide spinner buttons to center text properly */
+  appearance: textfield;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.row-controls input[type="number"]::-webkit-outer-spin-button,
+.row-controls input[type="number"]::-webkit-inner-spin-button,
+.col-controls input[type="number"]::-webkit-outer-spin-button,
+.col-controls input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.row-controls input[type="number"]::-moz-number-spin-box,
+.col-controls input[type="number"]::-moz-number-spin-box {
+  display: none;
+}
+
+.row-controls input[type="number"]:focus,
+.col-controls input[type="number"]:focus {
+  outline: none;
+  border-color: #535bf2;
+  background-color: #2a2a2a;
+}
+
+
+.controls-container button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #646cff;
+  background-color: transparent;
+  color: #646cff;
+  font-size: 1.5em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controls-container button:hover {
+  background-color: #646cff;
+  color: white;
+  transform: scale(1.1);
+}
+
+#solve-btn,
+#save-btn,
+#load-btn {
+  width: auto !important;
+  height: auto !important;
+  border-radius: 8px !important;
+  padding: 0.8em 2em !important;
+  font-size: 1.1em !important;
+  background-color: #1a1a1a;
+  border: 1px solid transparent;
+}
+
+#solve-btn:hover,
+#save-btn:hover,
+#load-btn:hover {
+  border-color: #646cff;
+  background-color: #646cff;
+  color: white;
+}
+
+.grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: #333;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.grid-row {
+  display: flex;
+  gap: 2px;
+}
+
+.grid-cell {
+  width: 55px;
+  height: 45px;
+  flex-shrink: 0;
+  border: none;
+  background-color: #1a1a1a;
+  color: white;
+  text-align: center;
+  font-size: 1.0em;
+  border-radius: 3px;
+  transition: background-color 0.25s;
+  /* Hide spinner buttons for cleaner appearance */
+  appearance: textfield;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.grid-cell:focus {
+  outline: 2px solid #646cff;
+  background-color: #2a2a2a;
+}
+
+.grid-cell:hover {
+  background-color: #2a2a2a;
+}
+
+.grid-cell::-webkit-outer-spin-button,
+.grid-cell::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.grid-cell::-moz-number-spin-box {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .grid-cell {
+    width: 50px;
+    height: 40px;
+    font-size: 0.9em;
+  }
+
+  .controls-container {
+    gap: 1rem;
+  }
+
+  h1 {
+    font-size: 2em;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  .grid-cell {
+    background-color: #f9f9f9;
+    color: #213547;
+    border: 1px solid #ddd;
+  }
+
+  .grid-cell:focus {
+    background-color: white;
+  }
+
+  .grid-cell:hover {
+    background-color: white;
+  }
+
+  .control-btn {
+    border-color: #646cff;
+    color: #646cff;
+  }
+
+  .control-btn:hover {
+    background-color: #646cff;
+    color: white;
+  }
+
+  .row-controls input[type="number"],
+  .col-controls input[type="number"] {
+    background-color: #f9f9f9;
+    color: #213547;
+    border-color: #646cff;
+  }
+
+  .row-controls input[type="number"]:focus,
+  .col-controls input[type="number"]:focus {
+    background-color: white;
+  }
+
+  .grid-container,
+  .top-grid-container,
+  .right-grid-container {
+    background-color: #e5e5e5;
+  }
+
+  #solve-btn,
+  #save-btn,
+  #load-btn {
+    background-color: #f9f9f9;
+    color: #213547;
+  }
+
+  body.drag-over {
+    background-color: rgba(116, 123, 255, 0.1);
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+}
