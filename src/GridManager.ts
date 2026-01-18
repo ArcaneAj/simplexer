@@ -6,12 +6,17 @@ export class GridManager {
   private rightGridData: number[] = [];
   private solutionData: number[] = [];
   private totalsData: number[] = [];
+  private variableLabels: string[] = [];
+  private constraintLabels: string[] = [];
   private gridContainer: HTMLElement;
   private topGridContainer: HTMLElement;
   private rightGridContainer: HTMLElement;
   private solutionGridContainer: HTMLElement;
   private totalsGridContainer: HTMLElement;
+  private variableLabelsContainer: HTMLElement;
+  private constraintLabelsContainer: HTMLElement;
   private controlsContainer: HTMLElement;
+  private labelDebounceTimer: number | null = null;
 
   constructor() {
     this.gridContainer = document.createElement('div');
@@ -25,6 +30,12 @@ export class GridManager {
 
     this.totalsGridContainer = document.createElement('div');
     this.totalsGridContainer.className = 'totals-grid-container';
+
+    this.variableLabelsContainer = document.createElement('div');
+    this.variableLabelsContainer.className = 'variable-labels-container';
+
+    this.constraintLabelsContainer = document.createElement('div');
+    this.constraintLabelsContainer.className = 'constraint-labels-container';
 
     this.rightGridContainer = document.createElement('div');
     this.rightGridContainer.className = 'right-grid-container';
@@ -58,6 +69,12 @@ export class GridManager {
 
     // Initialize totals grid with same number of rows
     this.totalsData = new Array(rows).fill(0);
+
+    // Initialize variable labels
+    this.variableLabels = Array.from({length: cols}, (_, i) => `x${i + 1}`);
+
+    // Initialize constraint labels
+    this.constraintLabels = Array.from({length: rows}, (_, i) => `c${i + 1}`);
 
     // Initialize right grid with same number of rows
     this.rightGridData = new Array(rows).fill(0);
@@ -229,12 +246,14 @@ export class GridManager {
         this.gridData.push(newRow);
         this.rightGridData.push(0);
         this.totalsData.push(0);
+        this.constraintLabels.push(`c${i + 1}`);
       }
     } else if (numRows < currentRows) {
       // Remove rows
       this.gridData.splice(numRows);
       this.rightGridData.splice(numRows);
       this.totalsData.splice(numRows);
+      this.constraintLabels.splice(numRows);
     }
 
     this.createControls();
@@ -261,12 +280,14 @@ export class GridManager {
       for (let i = currentCols; i < numCols; i++) {
         this.topGridData.push(0);
         this.solutionData.push(0);
+        this.variableLabels.push(`x${i + 1}`);
       }
     } else if (numCols < currentCols) {
       // Remove columns
       this.gridData.forEach(row => row.splice(numCols));
       this.topGridData.splice(numCols);
       this.solutionData.splice(numCols);
+      this.variableLabels.splice(numCols);
     }
 
     this.createControls();
@@ -326,7 +347,9 @@ export class GridManager {
     const data = {
       body: this.gridData,
       variables: this.topGridData,
-      constraints: this.rightGridData
+      constraints: this.rightGridData,
+      variableLabels: this.variableLabels,
+      constraintLabels: this.constraintLabels
     };
 
     const jsonString = JSON.stringify(data, null, 4);
@@ -404,6 +427,10 @@ export class GridManager {
     this.topGridData = data.variables.map((cell: any) => Number(cell) || 0);
     this.rightGridData = data.constraints.map((cell: any) => Number(cell) || 0);
 
+    // Update labels if present, otherwise use defaults
+    this.variableLabels = data.variableLabels || Array.from({length: numCols}, (_, i) => `x${i + 1}`);
+    this.constraintLabels = data.constraintLabels || Array.from({length: numRows}, (_, i) => `c${i + 1}`);
+
     // Resize solution and totals grids to match new dimensions
     this.solutionData = new Array(numCols).fill(0);
     this.totalsData = new Array(numRows).fill(0);
@@ -468,8 +495,10 @@ export class GridManager {
 
   private render() {
     this.renderSolution();
+    this.renderVariableLabels();
     this.renderTop();
     this.renderMain();
+    this.renderConstraintLabels();
     this.renderRight();
     this.renderTotals();
   }
@@ -524,6 +553,118 @@ export class GridManager {
 
       this.rightGridContainer.appendChild(rowElement);
     });
+  }
+
+  private renderVariableLabels(focusedIndex?: number) {
+    this.variableLabelsContainer.innerHTML = '';
+
+    const labelsRow = document.createElement('div');
+    labelsRow.className = 'grid-row';
+
+    this.variableLabels.forEach((label, colIndex) => {
+      const labelElement = document.createElement('input');
+      labelElement.type = 'text';
+      labelElement.className = 'grid-cell variable-label';
+      labelElement.value = label;
+      labelElement.addEventListener('input', (e) => {
+        this.variableLabels[colIndex] = (e.target as HTMLInputElement).value;
+        // Debounce the re-render
+        this.debouncedUpdateVariableLabels(colIndex);
+      });
+
+      labelsRow.appendChild(labelElement);
+    });
+
+    this.variableLabelsContainer.appendChild(labelsRow);
+
+    // Restore focus if specified
+    if (focusedIndex !== undefined) {
+      setTimeout(() => {
+        const inputs = this.variableLabelsContainer.querySelectorAll('input');
+        if (inputs[focusedIndex]) {
+          inputs[focusedIndex].focus();
+          // Restore cursor position to end
+          const input = inputs[focusedIndex] as HTMLInputElement;
+          input.setSelectionRange(input.value.length, input.value.length);
+        }
+      }, 0);
+    }
+  }
+
+  private debouncedUpdateVariableLabels(focusedIndex: number) {
+    if (this.labelDebounceTimer) {
+      clearTimeout(this.labelDebounceTimer);
+    }
+
+    this.labelDebounceTimer = window.setTimeout(() => {
+      this.renderVariableLabels(focusedIndex);
+      this.labelDebounceTimer = null;
+    }, 300); // 300ms debounce
+  }
+
+  private renderConstraintLabels(focusedIndex?: number) {
+    this.constraintLabelsContainer.innerHTML = '';
+
+    // Calculate the maximum width needed for all labels
+    const maxLabelWidth = Math.max(...this.constraintLabels.map(label => {
+      // Create a temporary element to measure text width
+      const tempElement = document.createElement('span');
+      tempElement.style.visibility = 'hidden';
+      tempElement.style.position = 'absolute';
+      tempElement.style.fontSize = '1.0em';
+      tempElement.style.fontFamily = 'monospace'; // Use monospace for consistent measurement
+      tempElement.textContent = label;
+      document.body.appendChild(tempElement);
+      const width = tempElement.getBoundingClientRect().width + 20;
+      document.body.removeChild(tempElement);
+      return width;
+    }));
+
+    // Add padding and minimum width
+    const cellWidth = Math.max(maxLabelWidth + 20, 60); // 20px padding, 60px minimum
+
+    this.constraintLabels.forEach((label, rowIndex) => {
+      const labelElement = document.createElement('input');
+      labelElement.type = 'text';
+      labelElement.className = 'grid-cell constraint-label';
+      labelElement.value = label;
+      labelElement.style.width = `${cellWidth}px`;
+      labelElement.addEventListener('input', (e) => {
+        this.constraintLabels[rowIndex] = (e.target as HTMLInputElement).value;
+        // Debounce the re-render to avoid focus loss
+        this.debouncedUpdateLabels(rowIndex);
+      });
+
+      const labelRow = document.createElement('div');
+      labelRow.className = 'grid-row';
+      labelRow.appendChild(labelElement);
+
+      this.constraintLabelsContainer.appendChild(labelRow);
+    });
+
+    // Restore focus if specified
+    if (focusedIndex !== undefined) {
+      setTimeout(() => {
+        const inputs = this.constraintLabelsContainer.querySelectorAll('input');
+        if (inputs[focusedIndex]) {
+          inputs[focusedIndex].focus();
+          // Restore cursor position to end
+          const input = inputs[focusedIndex] as HTMLInputElement;
+          input.setSelectionRange(input.value.length, input.value.length);
+        }
+      }, 0);
+    }
+  }
+
+  private debouncedUpdateLabels(focusedIndex: number) {
+    if (this.labelDebounceTimer) {
+      clearTimeout(this.labelDebounceTimer);
+    }
+
+    this.labelDebounceTimer = window.setTimeout(() => {
+      this.renderConstraintLabels(focusedIndex);
+      this.labelDebounceTimer = null;
+    }, 300); // 300ms debounce
   }
 
   private renderTotals() {
@@ -638,7 +779,10 @@ export class GridManager {
     const gridsWrapper = document.createElement('div');
     gridsWrapper.className = 'grids-wrapper';
 
-    // Add solution grid (above cost vector)
+    // Add variable labels (above solution)
+    gridsWrapper.appendChild(this.variableLabelsContainer);
+
+    // Add solution grid
     gridsWrapper.appendChild(this.solutionGridContainer);
 
     // Add top grid (cost vector)
@@ -650,6 +794,7 @@ export class GridManager {
     mainAndRightWrapper.appendChild(this.gridContainer);
     mainAndRightWrapper.appendChild(this.rightGridContainer);
     mainAndRightWrapper.appendChild(this.totalsGridContainer);
+    mainAndRightWrapper.appendChild(this.constraintLabelsContainer);
 
     gridsWrapper.appendChild(mainAndRightWrapper);
 

@@ -112,6 +112,7 @@ h1 {
   width: 180px;
 }
 
+.variable-labels-container,
 .solution-grid-container {
   display: flex;
   flex-direction: column;
@@ -121,6 +122,18 @@ h1 {
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-bottom: 0.5rem;
+}
+
+.constraint-labels-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: #333;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-left: 0.5rem;
+  width: fit-content;
 }
 
 .solution-cell {
@@ -152,6 +165,31 @@ h1 {
   background-color: #d4edda !important;
   color: #155724 !important;
   border-color: #c3e6cb !important;
+}
+
+.variable-label {
+  background-color: #fff3cd !important;
+  /* Light yellow background */
+  color: #856404 !important;
+  /* Dark yellow text */
+  font-weight: normal !important;
+  font-style: italic;
+  text-align: center;
+  width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.constraint-label {
+  background-color: #fff3cd !important;
+  /* Light yellow background */
+  color: #856404 !important;
+  /* Dark yellow text */
+  font-weight: normal !important;
+  font-style: italic;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .row-controls label,
@@ -385,7 +423,9 @@ h1 {
   .top-grid-container,
   .right-grid-container,
   .solution-grid-container,
-  .totals-grid-container {
+  .totals-grid-container,
+  .variable-labels-container,
+  .constraint-labels-container {
     background-color: #e5e5e5;
   }
 
@@ -404,6 +444,13 @@ h1 {
     /* Light blue-green in light mode */
     color: #0c5460 !important;
     border-color: #bee5eb !important;
+  }
+
+  .variable-label,
+  .constraint-label {
+    background-color: #fff3cd !important;
+    /* Light yellow in light mode */
+    color: #856404 !important;
   }
 
   #solve-btn,
