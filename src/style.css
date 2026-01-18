@@ -112,6 +112,48 @@ h1 {
   width: 180px;
 }
 
+.solution-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: #333;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0.5rem;
+}
+
+.solution-cell {
+  background-color: #e8f4fd !important;
+  color: #2c5aa0 !important;
+  font-weight: bold !important;
+  cursor: default !important;
+}
+
+.totals-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: #333;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-left: 0.5rem;
+}
+
+.totals-cell {
+  background-color: #f0e8fd !important;
+  color: #4c1d95 !important;
+  font-weight: bold !important;
+  cursor: default !important;
+}
+
+.constraint-satisfied {
+  background-color: #d4edda !important;
+  color: #155724 !important;
+  border-color: #c3e6cb !important;
+}
+
 .row-controls label,
 .col-controls label {
   font-size: 1.2em;
@@ -210,7 +252,8 @@ h1 {
 
 #solve-btn,
 #save-btn,
-#load-btn {
+#load-btn,
+#run-tests {
   width: auto !important;
   height: auto !important;
   border-radius: 8px !important;
@@ -222,7 +265,8 @@ h1 {
 
 #solve-btn:hover,
 #save-btn:hover,
-#load-btn:hover {
+#load-btn:hover,
+#run-tests:hover {
   border-color: #646cff;
   background-color: #646cff;
   color: white;
@@ -339,13 +383,33 @@ h1 {
 
   .grid-container,
   .top-grid-container,
-  .right-grid-container {
+  .right-grid-container,
+  .solution-grid-container,
+  .totals-grid-container {
     background-color: #e5e5e5;
+  }
+
+  .solution-cell {
+    background-color: #f0f8ff !important;
+    color: #1e40af !important;
+  }
+
+  .totals-cell {
+    background-color: #f5f0ff !important;
+    color: #3b0764 !important;
+  }
+
+  .constraint-satisfied {
+    background-color: #d1ecf1 !important;
+    /* Light blue-green in light mode */
+    color: #0c5460 !important;
+    border-color: #bee5eb !important;
   }
 
   #solve-btn,
   #save-btn,
-  #load-btn {
+  #load-btn,
+  #run-tests {
     background-color: #f9f9f9;
     color: #213547;
   }

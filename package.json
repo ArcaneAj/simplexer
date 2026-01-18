@@ -6,10 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "ts-node --project tsconfig.test.json src/Solver.test.ts",
+    "test:debug": "node --inspect-brk $(which ts-node) --project tsconfig.test.json src/Solver.test.ts"
   },
   "devDependencies": {
     "typescript": "~5.9.3",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0"
   }
 }

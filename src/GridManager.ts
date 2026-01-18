@@ -4,9 +4,13 @@ export class GridManager {
   private gridData: number[][] = [];
   private topGridData: number[] = [];
   private rightGridData: number[] = [];
+  private solutionData: number[] = [];
+  private totalsData: number[] = [];
   private gridContainer: HTMLElement;
   private topGridContainer: HTMLElement;
   private rightGridContainer: HTMLElement;
+  private solutionGridContainer: HTMLElement;
+  private totalsGridContainer: HTMLElement;
   private controlsContainer: HTMLElement;
 
   constructor() {
@@ -15,6 +19,12 @@ export class GridManager {
 
     this.topGridContainer = document.createElement('div');
     this.topGridContainer.className = 'top-grid-container';
+
+    this.solutionGridContainer = document.createElement('div');
+    this.solutionGridContainer.className = 'solution-grid-container';
+
+    this.totalsGridContainer = document.createElement('div');
+    this.totalsGridContainer.className = 'totals-grid-container';
 
     this.rightGridContainer = document.createElement('div');
     this.rightGridContainer.className = 'right-grid-container';
@@ -42,6 +52,12 @@ export class GridManager {
 
     // Initialize top grid with same number of columns
     this.topGridData = new Array(cols).fill(0);
+
+    // Initialize solution grid with same number of columns
+    this.solutionData = new Array(cols).fill(0);
+
+    // Initialize totals grid with same number of rows
+    this.totalsData = new Array(rows).fill(0);
 
     // Initialize right grid with same number of rows
     this.rightGridData = new Array(rows).fill(0);
@@ -212,15 +228,24 @@ export class GridManager {
         const newRow = new Array(this.gridData[0].length).fill(0);
         this.gridData.push(newRow);
         this.rightGridData.push(0);
+        this.totalsData.push(0);
       }
     } else if (numRows < currentRows) {
       // Remove rows
       this.gridData.splice(numRows);
       this.rightGridData.splice(numRows);
+      this.totalsData.splice(numRows);
     }
 
     this.createControls();
     this.render();
+  }
+
+  private clearSolution() {
+    this.solutionData.fill(0);
+    this.totalsData.fill(0);
+    this.renderSolution();
+    this.renderTotals();
   }
 
   private setColumns(numCols: number) {
@@ -235,11 +260,13 @@ export class GridManager {
       });
       for (let i = currentCols; i < numCols; i++) {
         this.topGridData.push(0);
+        this.solutionData.push(0);
       }
     } else if (numCols < currentCols) {
       // Remove columns
       this.gridData.forEach(row => row.splice(numCols));
       this.topGridData.splice(numCols);
+      this.solutionData.splice(numCols);
     }
 
     this.createControls();
@@ -247,13 +274,52 @@ export class GridManager {
   }
 
   private solve() {
+    // Clear previous solution
+    this.clearSolution();
+
     const solver = new Solver(this.gridData, this.topGridData, this.rightGridData);
     const result = solver.solve();
 
     console.log('Solver result:', result);
 
-    // TODO: Display result in UI
-    alert(`Solver Status: ${result.status}\nOptimal Value: ${result.optimalValue}`);
+    if (result.status === 'optimal') {
+      // Update solution grid with results
+      this.solutionData = [...result.solution];
+
+      // Calculate totals for each constraint row
+      for (let i = 0; i < this.gridData.length; i++) {
+        let total = 0;
+        for (let j = 0; j < this.gridData[i].length; j++) {
+          total += this.gridData[i][j] * result.solution[j];
+        }
+        this.totalsData[i] = total;
+      }
+    }
+
+    this.renderSolution();
+    this.renderTotals();
+  }
+
+  private renderSolution() {
+    this.solutionGridContainer.innerHTML = '';
+
+    const solutionRowElement = document.createElement('div');
+    solutionRowElement.className = 'grid-row';
+
+    this.solutionData.forEach((cell) => {
+      const cellElement = document.createElement('input');
+      cellElement.type = 'number';
+      cellElement.className = 'grid-cell solution-cell';
+      cellElement.value = cell.toFixed(3);
+      cellElement.readOnly = true; // Make solution cells read-only
+      cellElement.style.backgroundColor = '#e8f4fd'; // Light blue background to distinguish
+      cellElement.style.color = '#2c5aa0'; // Darker text color
+      cellElement.style.fontWeight = 'bold';
+
+      solutionRowElement.appendChild(cellElement);
+    });
+
+    this.solutionGridContainer.appendChild(solutionRowElement);
   }
 
   private save() {
@@ -338,6 +404,10 @@ export class GridManager {
     this.topGridData = data.variables.map((cell: any) => Number(cell) || 0);
     this.rightGridData = data.constraints.map((cell: any) => Number(cell) || 0);
 
+    // Resize solution and totals grids to match new dimensions
+    this.solutionData = new Array(numCols).fill(0);
+    this.totalsData = new Array(numRows).fill(0);
+
     // Re-render the grids
     this.createControls();
     this.render();
@@ -397,6 +467,95 @@ export class GridManager {
   }
 
   private render() {
+    this.renderSolution();
+    this.renderTop();
+    this.renderMain();
+    this.renderRight();
+    this.renderTotals();
+  }
+
+  private renderMain() {
+    this.gridContainer.innerHTML = '';
+
+    this.gridData.forEach((row, rowIndex) => {
+      const rowElement = document.createElement('div');
+      rowElement.className = 'grid-row';
+
+      row.forEach((cell, colIndex) => {
+        const cellElement = document.createElement('input');
+        cellElement.type = 'number';
+        cellElement.className = 'grid-cell';
+        cellElement.value = cell.toString();
+        cellElement.addEventListener('click', (e) => {
+          (e.target as HTMLInputElement).select();
+        });
+
+        cellElement.addEventListener('input', (e) => {
+          const value = parseFloat((e.target as HTMLInputElement).value) || 0;
+          this.gridData[rowIndex][colIndex] = value;
+        });
+        rowElement.appendChild(cellElement);
+      });
+
+      this.gridContainer.appendChild(rowElement);
+    });
+  }
+
+  private renderRight() {
+    this.rightGridContainer.innerHTML = '';
+
+    this.rightGridData.forEach((cell, rowIndex) => {
+      const cellElement = document.createElement('input');
+      cellElement.type = 'number';
+      cellElement.className = 'grid-cell';
+      cellElement.value = cell.toString();
+      cellElement.addEventListener('click', (e) => {
+        (e.target as HTMLInputElement).select();
+      });
+
+      cellElement.addEventListener('input', (e) => {
+        const value = parseFloat((e.target as HTMLInputElement).value) || 0;
+        this.rightGridData[rowIndex] = value;
+      });
+
+      const rowElement = document.createElement('div');
+      rowElement.className = 'grid-row';
+      rowElement.appendChild(cellElement);
+
+      this.rightGridContainer.appendChild(rowElement);
+    });
+  }
+
+  private renderTotals() {
+    this.totalsGridContainer.innerHTML = '';
+
+    this.totalsData.forEach((cell, index) => {
+      const cellElement = document.createElement('input');
+      cellElement.type = 'number';
+      cellElement.className = 'grid-cell totals-cell';
+      cellElement.value = cell.toFixed(3);
+      cellElement.readOnly = true;
+
+      // Highlight when total matches constraint (within tolerance)
+      const constraintValue = this.rightGridData[index];
+      const tolerance = 1e-6;
+      const matches = Math.abs(cell - constraintValue) < tolerance;
+
+      if (matches) {
+        cellElement.classList.add('constraint-satisfied');
+      }
+
+      cellElement.style.fontWeight = 'bold';
+
+      const rowElement = document.createElement('div');
+      rowElement.className = 'grid-row';
+      rowElement.appendChild(cellElement);
+
+      this.totalsGridContainer.appendChild(rowElement);
+    });
+  }
+
+  private renderTop() {
     this.gridContainer.innerHTML = '';
     this.topGridContainer.innerHTML = '';
     this.rightGridContainer.innerHTML = '';
@@ -475,18 +634,22 @@ export class GridManager {
     container.className = 'grid-app';
     container.appendChild(this.controlsContainer);
 
-    // Create wrapper for the three grids
+    // Create wrapper for the grids
     const gridsWrapper = document.createElement('div');
     gridsWrapper.className = 'grids-wrapper';
 
-    // Add top grid
+    // Add solution grid (above cost vector)
+    gridsWrapper.appendChild(this.solutionGridContainer);
+
+    // Add top grid (cost vector)
     gridsWrapper.appendChild(this.topGridContainer);
 
-    // Create wrapper for main grid and right grid
+    // Create wrapper for main grid and right grids
     const mainAndRightWrapper = document.createElement('div');
     mainAndRightWrapper.className = 'main-and-right-wrapper';
     mainAndRightWrapper.appendChild(this.gridContainer);
     mainAndRightWrapper.appendChild(this.rightGridContainer);
+    mainAndRightWrapper.appendChild(this.totalsGridContainer);
 
     gridsWrapper.appendChild(mainAndRightWrapper);
 
